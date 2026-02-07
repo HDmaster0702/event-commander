@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>Event Commander</Name>
+  <Repository>ghcr.io/hdmaster0702/event-commander:latest</Repository>
+  <Registry>https://ghcr.io</Registry>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/HDmaster0702/event-commander/issues</Support>
+  <Project>https://github.com/HDmaster0702/event-commander</Project>
+  <Overview>Event Commander (formerly Reforger Bot) - A Discord bot and web dashboard for managing Reforger events.</Overview>
+  <Category>Tools:Utilities</Category>
+  <WebUI>http://[IP]:[PORT:3000]</WebUI>
+  <TemplateURL/>
+  <Icon>https://github.com/HDmaster0702/event-commander/raw/main/public/logo.png</Icon>
+  <ExtraParams/>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled>1707300000</DateInstalled>
+  <DonateText/>
+  <DonateLink/>
+  <Requires/>
+  <Config Name="Web Port" Target="3000" Default="3000" Mode="tcp" Description="The port for the web dashboard." Type="Port" Display="always" Required="true" Mask="false">3000</Config>
+  <Config Name="Database URL" Target="DATABASE_URL" Default="" Mode="" Description="PostgreSQL Connection String (postgresql://user:password@host:port/db)" Type="Variable" Display="always" Required="true" Mask="true"/>
+  <Config Name="Auth Secret" Target="AUTH_SECRET" Default="" Mode="" Description="Random string for NextAuth encryption (openssl rand -base64 32)" Type="Variable" Display="always" Required="true" Mask="true"/>
+  <Config Name="Discord Client ID" Target="AUTH_DISCORD_ID" Default="" Mode="" Description="Discord Application ID" Type="Variable" Display="always" Required="true" Mask="false"/>
+  <Config Name="Discord Client Secret" Target="AUTH_DISCORD_SECRET" Default="" Mode="" Description="Discord Client Secret" Type="Variable" Display="always" Required="true" Mask="true"/>
+  <Config Name="Discord Bot Token" Target="BOT_TOKEN" Default="" Mode="" Description="Discord Bot Token" Type="Variable" Display="always" Required="true" Mask="true"/>
+  <Config Name="App URL" Target="NEXT_PUBLIC_APP_URL" Default="http://YOUR_UNRAID_IP:3000" Mode="" Description="Public URL for the dashboard (used for Auth callbacks)" Type="Variable" Display="always" Required="true" Mask="false">http://YOUR_UNRAID_IP:3000</Config>
+</Container>

@@ -159,7 +159,13 @@ export async function updateEvent(eventId: string, data: EventFormValues) {
 
             if (attendeeIds.length > 0) {
                 console.log(`[UpdateEvent] Found ${attendeeIds.length} attendees.`);
-                await sendEventNotification(event, 'UPDATE', attendeeIds);
+                const recipients = await prisma.user.findMany({
+                    where: { discordId: { in: attendeeIds } },
+                    // @ts-ignore
+                    include: { notificationSettings: true }
+                });
+                // @ts-ignore
+                await sendEventNotification(event, 'UPDATE', recipients);
                 console.log(`[UpdateEvent] sendEventNotification called`);
             } else {
                 console.log(`[UpdateEvent] No attendees found for triggered update.`);
@@ -322,6 +328,7 @@ export async function cancelEvent(eventId: string) {
         if (attendeeIds.length > 0) {
             const recipients = await prisma.user.findMany({
                 where: { discordId: { in: attendeeIds } },
+                // @ts-ignore
                 include: { notificationSettings: true }
             });
             // @ts-ignore

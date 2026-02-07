@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: event-commander
+    image: ghcr.io/hdmaster0702/event-commander:latest
+    restart: always
+    ports:
+      # Map host port 3000 to container port 3000
+      - "3000:3000"
+    environment:
+      # Use internal docker network to connect to 'db' service
+      - DATABASE_URL=postgresql://reforger:supersecurepassword@db:5432/reforger_db
+      
+      # App Configuration: Fill these in or use a .env file!
+      - AUTH_SECRET=${AUTH_SECRET}
+      - AUTH_DISCORD_ID=${AUTH_DISCORD_ID}
+      - AUTH_DISCORD_SECRET=${AUTH_DISCORD_SECRET}
+      - BOT_TOKEN=${BOT_TOKEN}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - reforger-net
+
+  db:
+    container_name: event-commander-db
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=reforger
+      - POSTGRES_PASSWORD=supersecurepassword
+      - POSTGRES_DB=reforger_db
+    volumes:
+      # Persist data on host
+      - ./postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reforger"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - reforger-net
+
+networks:
+  reforger-net:
+    driver: bridge

@@ -46,21 +46,16 @@ async function sendDM(discordId: string, content: any) {
 export async function sendEventNotification(
     event: Event & { createdBy: User },
     type: NotificationType,
-    discordUserIds: string[]
+    recipients: (User & { notificationSettings: NotificationSettings | null })[]
 ) {
-    if (discordUserIds.length === 0) return;
-
-    // Fetch settings for these users
-    const settingsList = await prisma.notificationSettings.findMany({
-        where: { discordUserId: { in: discordUserIds } }
-    });
+    if (recipients.length === 0) return;
 
     // Map settings by Discord ID for quick lookup
-    const settingsMap = new Map<string, NotificationSettings>();
-    settingsList.forEach(s => settingsMap.set(s.discordUserId, s));
+    const settingsMap = new Map<string, NotificationSettings | null>();
+    recipients.forEach(u => settingsMap.set(u.discordId, u.notificationSettings));
 
     // Filter targets
-    const targets = discordUserIds.filter(discordId => {
+    const targets = recipients.map(u => u.discordId).filter(discordId => {
         let s = settingsMap.get(discordId);
 
         // If no settings exist yet, assume defaults (ALL TRUE based on user request)

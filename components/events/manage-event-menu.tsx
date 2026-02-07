@@ -8,6 +8,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -19,6 +20,11 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { TransferDialog } from "./dialogs/transfer-dialog";
+import { EditDetailsDialog } from "./dialogs/edit-details-dialog";
+import { RescheduleDialog } from "./dialogs/reschedule-dialog";
+import { UpdateFilesDialog } from "./dialogs/update-files-dialog";
+import { Settings, Pencil, CalendarClock, User, Trash2, FileAxis3D } from "lucide-react";
+import { Event } from "@prisma/client";
 
 interface ManageEventMenuProps {
     event: Event;

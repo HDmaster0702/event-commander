@@ -136,7 +136,7 @@ async function checkPreEventNotifications(now: Date) {
 
             if (diffHours <= m.hours && diffHours > 0) {
                 // Check if already sent
-                // @ts-ignore - Prisma enum issue sometimes in dev
+                // @ts-ignore - Prisma include typing can be tricky with arrays
                 const hasLog = event.notificationLogs.some(l => l.type === m.type);
                 if (hasLog) continue;
 
@@ -156,9 +156,11 @@ async function checkPreEventNotifications(now: Date) {
 
                 const recipients = await prisma.user.findMany({
                     where: { discordId: { in: attendeeIds } },
+                    // @ts-ignore - Prisma type inference issue
                     include: { notificationSettings: true }
                 });
 
+                // @ts-ignore - Prisma type inference not picking up notificationSettings relation locally
                 await sendEventNotification(event, m.type, recipients);
                 // We rely on the log creation inside sendEventNotification, but we should ensure it happens.
                 // Actually sendEventNotification creates the log.
@@ -233,10 +235,11 @@ async function checkAttendanceReminders(now: Date) {
 
                 const recipients = await prisma.user.findMany({
                     where: { discordId: { in: attendeeIds } },
+                    // @ts-ignore - Prisma type inference issue
                     include: { notificationSettings: true }
                 });
 
-                // @ts-ignore
+                // @ts-ignore - Prisma type inference not picking up notificationSettings relation locally
                 await sendEventNotification(event, 'ATTENDANCE_CHECK', recipients);
             }
         }

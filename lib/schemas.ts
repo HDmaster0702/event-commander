@@ -3,9 +3,7 @@ import { z } from 'zod';
 export const EventFormSchema = z.object({
     name: z.string().min(1, "Name is required"),
     description: z.string().optional(),
-    startTime: z.date({
-        required_error: "Start time is required",
-    }),
+    startTime: z.date(),
     bannerUrl: z.string().optional(),
     sitrepUrl: z.string().optional(),
     rosterUrl: z.string().optional(),
