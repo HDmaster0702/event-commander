@@ -20,7 +20,8 @@ model User {
   isActive      Boolean    @default(true)
   timeZone      String?    @default("UTC")
   auditLogs     AuditLog[]
-  createdEvents Event[]    @relation("EventCreator")
+  createdEvents        Event[]                 @relation("EventCreator")
+  notificationSettings NotificationSettings?
 }
 
 model Event {
@@ -104,6 +105,7 @@ model NotificationSettings {
   attendanceReminder Boolean  @default(true)
   language           String   @default("en")
   updatedAt          DateTime @updatedAt
+  user               User     @relation(fields: [discordUserId], references: [discordId])
 }
 
 model EventNotificationLog {
