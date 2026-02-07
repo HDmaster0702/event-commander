@@ -1,0 +1,141 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String     @id @default(cuid())
+  name          String?
+  email         String     @unique
+  password      String
+  discordId     String     @unique
+  role          Role       @default(ANNOUNCER)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  image         String?
+  isActive      Boolean    @default(true)
+  timeZone      String?    @default("UTC")
+  auditLogs     AuditLog[]
+  createdEvents Event[]    @relation("EventCreator")
+}
+
+model Event {
+  id                    String                 @id @default(cuid())
+  name                  String
+  description           String?
+  rosterUrl             String?
+  createdById           String
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  bannerUrl             String?
+  discordMessageId      String?
+  modlistUrl            String?
+  sitrepUrl             String?
+  scheduledAt           DateTime?
+  startTime             DateTime
+  status                EventStatus            @default(DRAFT)
+  announcementChannelId String?
+  createdBy             User                   @relation("EventCreator", fields: [createdById], references: [id])
+  notificationLogs      EventNotificationLog[]
+  reactions             EventReaction[]
+}
+
+model Settings {
+  id                         String   @id @default(cuid())
+  discordGuildId             String?
+  announcementChannelId      String?
+  notificationGuideChannelId String?
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+  timeZone                   String?  @default("UTC")
+}
+
+model Invitation {
+  id        String   @id @default(cuid())
+  discordId String
+  role      Role
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([discordId])
+}
+
+model EventReaction {
+  id              String   @id @default(cuid())
+  eventId         String
+  discordUserId   String
+  discordUsername String?
+  discordAvatar   String?
+  reaction        String
+  fetchedAt       DateTime @default(now())
+  event           Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, discordUserId, reaction])
+  @@index([eventId])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  details   Json?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([action])
+  @@index([entity])
+  @@index([createdAt])
+}
+
+model NotificationSettings {
+  id                 String   @id @default(cuid())
+  discordUserId      String   @unique
+  preEvent3Days      Boolean  @default(true)
+  preEvent24Hours    Boolean  @default(true)
+  preEvent1Hour      Boolean  @default(true)
+  eventUpdates       Boolean  @default(true)
+  attendanceReminder Boolean  @default(true)
+  language           String   @default("en")
+  updatedAt          DateTime @updatedAt
+}
+
+model EventNotificationLog {
+  id             String           @id @default(cuid())
+  eventId        String
+  type           NotificationType
+  sentAt         DateTime         @default(now())
+  recipientCount Int              @default(0)
+  event          Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([type])
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  ANNOUNCER
+}
+
+enum EventStatus {
+  DRAFT
+  SCHEDULED
+  ANNOUNCED
+  CANCELLED
+  COMPLETED
+}
+
+enum NotificationType {
+  PRE_3D
+  PRE_24H
+  PRE_1H
+  ATTENDANCE_CHECK
+  UPDATE
+}
