@@ -149,6 +149,14 @@ export async function updateEvent(eventId: string, data: EventFormValues) {
                 }
             );
 
+            // Sync reactions first to ensure we have the latest attendee list
+            try {
+                const { syncEventReactions } = await import('@/lib/telemetry-scheduler');
+                await syncEventReactions(event.id, event.announcementChannelId, event.discordMessageId);
+            } catch (e) {
+                console.error("[UpdateEvent] Failed to sync reactions before update:", e);
+            }
+
             // Notify attendees about update
             // 1. Fetch recipients
             const reactions = await prisma.eventReaction.findMany({
@@ -316,6 +324,16 @@ export async function cancelEvent(eventId: string) {
             },
             include: { createdBy: true }
         });
+
+        // Sync reactions to ensure we notify everyone
+        try {
+            const { syncEventReactions } = await import('@/lib/telemetry-scheduler');
+            if (event.announcementChannelId && event.discordMessageId) {
+                await syncEventReactions(event.id, event.announcementChannelId, event.discordMessageId);
+            }
+        } catch (e) {
+            console.error("[CancelEvent] Failed to sync reactions:", e);
+        }
 
         // Send notification AFTER status update so the embed shows correct status if we were to include it,
         // OR rely on the fact it's a cancellation. 

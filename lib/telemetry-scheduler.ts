@@ -40,7 +40,7 @@ export async function syncTelemetry() {
     }
 }
 
-async function syncEventReactions(eventId: string, channelId: string, messageId: string) {
+export async function syncEventReactions(eventId: string, channelId: string, messageId: string) {
     // We need to fetch the message and its reactions from Discord.
     // Since this runs on the server, we can use the Bot token.
 
