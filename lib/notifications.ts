@@ -46,32 +46,27 @@ async function sendDM(discordId: string, content: any) {
 export async function sendEventNotification(
     event: Event & { createdBy: User },
     type: NotificationType,
-    recipients: (User & { notificationSettings: NotificationSettings | null })[]
+    recipientIds: string[] // Changed from full User objects to just Discord IDs
 ) {
-    if (recipients.length === 0) return;
+    if (recipientIds.length === 0) return;
+
+    // Fetch existing settings for these users
+    const existingSettings = await prisma.notificationSettings.findMany({
+        where: { discordUserId: { in: recipientIds } }
+    });
 
     // Map settings by Discord ID for quick lookup
-    const settingsMap = new Map<string, NotificationSettings | null>();
-    recipients.forEach(u => settingsMap.set(u.discordId, u.notificationSettings));
+    const settingsMap = new Map<string, NotificationSettings>();
+    existingSettings.forEach(s => settingsMap.set(s.discordUserId, s));
 
     // Filter targets
-    const targets = recipients.map(u => u.discordId).filter(discordId => {
+    const targets = recipientIds.filter(discordId => {
         let s = settingsMap.get(discordId);
 
-        // If no settings exist yet, assume defaults (ALL TRUE based on user request)
+        // If no settings exist yet, use defaults (ALL TRUE based on user request)
         if (!s) {
-            // Virtual default settings
-            s = {
-                id: 'default',
-                discordUserId: discordId,
-                preEvent3Days: true,
-                preEvent24Hours: true,
-                preEvent1Hour: true,
-                eventUpdates: true,
-                attendanceReminder: true,
-                language: 'en',
-                updatedAt: new Date()
-            };
+            // Virtual default settings for unregistered users
+            return true; // Default to receiving everything
         }
 
         switch (type) {
@@ -84,7 +79,7 @@ export async function sendEventNotification(
         }
     });
 
-    console.log(`Sending ${type} notification for event ${event.name} to ${targets.length} users.`);
+    console.log(`Sending ${type} notification for event ${event.name} to ${targets.length} users (out of ${recipientIds.length} potential recipients).`);
 
     for (const discordId of targets) {
         const s = settingsMap.get(discordId);
@@ -95,7 +90,7 @@ export async function sendEventNotification(
 
         const success = await sendDM(discordId, content);
         if (!success) {
-            console.warn(`Failed to send DM to ${discordId}`);
+            console.warn(`Failed to send DM to ${discordId} (User might have DMs disabled)`);
         }
     }
 
